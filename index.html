@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Blast</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: radial-gradient(circle, #ff9dbb, #ff569c, #c80072, #7a0055);
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+            flex-direction: column;
+        }
+
+        /* Floating Hearts */
+        .floating-heart {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle, #ff99cc, #ff4da6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite, drift 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-300px) scale(1.1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-600px) scale(0.6);
+            }
+        }
+
+        @keyframes drift {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(30px);
+            }
+        }
+
+        /* Centered Heart */
+        .heart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at center, #ff1f1f, #ff1f1f, #ff1f1f);
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 0, 128, 0.6);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 2;
+        }
+
+        .heart:hover {
+            transform: translate(-50%, -50%) rotate(45deg) scale(1.2);
+            box-shadow: 0 10px 30px rgba(255, 0, 128, 0.8);
+        }
+
+        .heart::before,
+        .heart::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border-radius: 50%;
+        }
+
+        .heart::before {
+            width: 100%;
+            height: 100%;
+            top: -50%;
+            left: 0;
+        }
+
+        .heart::after {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -50%;
+        }
+
+        /* Heart Fragment Animation */
+        .heart-fragment {
+            position: absolute;
+            background: radial-gradient(circle, #ff007f, #ff004c, transparent);
+            width: 10px;
+            height: 10px;
+            opacity: 1;
+            border-radius: 50%;
+        }
+
+        .blast-text {
+            position: absolute;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            opacity: 0;
+            text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.8);
+            transform: scale(0.5);
+            z-index: 1;
+        }
+
+        .text-entry-animation {
+            animation: text-entry 1.5s ease-out forwards;
+        }
+
+        @keyframes text-entry {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            80% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Explosion Animation */
+        @keyframes explode {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(var(--x-offset), var(--y-offset)) scale(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--x-offset), var(--y-offset)) scale(0);
+            }
+        }
+
+        /* "Click on the heart" Text Styling */
+        .click-text {
+            position: absolute;
+            top: calc(50% + 150px); /* Moved 150px below the heart */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px; /* Slightly larger font size */
+            color: #fff8dc; /* Light cream color */
+            font-weight: 600; /* Slightly bolder font */
+            text-shadow: 2px 2px 12px rgba(255, 255, 255, 0.8); /* More prominent shadow */
+            background: rgba(255, 255, 255, 0.2); /* Slight background color */
+            padding: 10px 20px; /* Added padding for a better look */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.4); /* Soft shadow */
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="heart-container"></div>
+    <div id="text-container"></div>
+    <div id="click-text" class="click-text">Click on the heart</div>
+
+    <script>
+        const heartContainer = document.getElementById('heart-container');
+        const textContainer = document.getElementById('text-container');
+        const clickText = document.getElementById('click-text');
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heartContainer.appendChild(heart);
+
+        // Add floating hearts across the page
+        for (let i = 0; i < 100; i++) {
+            const floatingHeart = document.createElement('div');
+            floatingHeart.className = 'floating-heart';
+            floatingHeart.style.left = `${Math.random() * window.innerWidth}px`;
+            floatingHeart.style.top = `${Math.random() * window.innerHeight}px`;
+            floatingHeart.style.animationDelay = `${Math.random() * 5}s`;
+            floatingHeart.style.animationDuration = `${Math.random() * 3 + 5}s`;
+            document.body.appendChild(floatingHeart);
+        }
+
+        heart.addEventListener('click', () => {
+            heart.remove();
+            clickText.remove();  // Remove the "Click on the heart" text after the heart is clicked
+
+            // Create and animate the text
+            const text = document.createElement('div');
+            text.textContent = 'I Love U Kanna';
+            text.className = 'blast-text text-entry-animation';
+            text.style.left = `${window.innerWidth / 2 - 90}px`;
+            text.style.top = `${window.innerHeight / 2 - 18}px`;
+            textContainer.appendChild(text);
+
+            // Create and animate heart fragments
+            for (let i = 0; i < 200; i++) {
+                const fragment = document.createElement('div');
+                fragment.className = 'heart-fragment';
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 500;
+                const size = Math.random() * 12 + 4;
+                const xOffset = Math.cos(angle) * distance;
+                const yOffset = Math.sin(angle) * distance;
+                fragment.style.width = `${size}px`;
+                fragment.style.height = `${size}px`;
+                fragment.style.left = `${window.innerWidth / 2}px`;
+                fragment.style.top = `${window.innerHeight / 2}px`;
+                fragment.style.setProperty('--x-offset', `${xOffset}px`);
+                fragment.style.setProperty('--y-offset', `${yOffset}px`);
+                fragment.style.animation = `explode 2s ease-out forwards`;
+
+                heartContainer.appendChild(fragment);
+
+                // Remove fragments after animation
+                fragment.addEventListener('animationend', () => {
+                    fragment.remove();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
